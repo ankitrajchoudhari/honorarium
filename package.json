@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "probe:paypal": "tsx scripts/sandbox-smoke.ts",
     "probe:gemini": "tsx scripts/probe-gemini.ts",
     "test": "vitest run",

@@ -128,7 +128,7 @@ Other commands:
 
 ## Judge testing
 
-1. Open the hosted demo: `<hosted URL>`. Each browser gets its own private workspace.
+1. Open the hosted demo: https://honorarium-ruby.vercel.app Each browser gets its own private workspace.
 2. Click **Open the sample study**. The rules are already locked, and verification starts at once.
 3. Open any row for its evidence, or go to **Review** to decide the holds (keys `J`/`K`, `P`, `D`, `/`).
 4. On **Payouts**, type `SLEEP-26` to approve. Statuses update from PayPal, and the money strip and **Ledger** follow.
