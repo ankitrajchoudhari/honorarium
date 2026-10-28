@@ -3,8 +3,8 @@
   "shortCode": "SLEEP-26",
   "protocolNumber": "IRB-2026-041 (synthetic)",
   "piName": "Dr. A. Rivera (fictional)",
-  "budgetCents": 150000,
-  "amountPerParticipantCents": 1000,
-  "consentTextExcerpt": "You will receive $10 for completing this survey. If responses cannot be verified, compensation may not be issued.",
+  "budgetCents": 15000,
+  "amountPerParticipantCents": 100,
+  "consentTextExcerpt": "You will receive $1 for completing this survey. If responses cannot be verified, compensation may not be issued.",
   "rulesText": "Don't pay responses finished in under 4 minutes. Don't pay anyone who fails the attention check on Q14 (correct answer: Strongly disagree). Don't pay if the hidden field is filled. Only one payment per email address — keep the earliest. Participants must be 18–30. Send for review if age and date of birth don't match, or if more than 25 responses arrive within one minute."
 }

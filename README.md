@@ -80,7 +80,7 @@ Incentive platforms such as Tremendous check payment-side signals. Panel platfor
 
 ## Results on the sample study
 
-518 synthetic responses, $1,500 budget, $10 per participant (patterns in [data/sample/MANIFEST.md](data/sample/MANIFEST.md)):
+518 synthetic responses, $150 budget, $1 per participant (kept small so repeated demo payouts do not drain the PayPal sandbox account) (patterns in [data/sample/MANIFEST.md](data/sample/MANIFEST.md)):
 
 | | Count |
 |---|---|
