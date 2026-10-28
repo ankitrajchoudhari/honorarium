@@ -1,0 +1,85 @@
+{
+  "timezone": "America/New_York",
+  "dateOrder": "MDY",
+  "columns": [
+    {
+      "column": "ResponseId",
+      "role": "respondent_id"
+    },
+    {
+      "column": "StartDate",
+      "role": "started_at"
+    },
+    {
+      "column": "EndDate",
+      "role": "submitted_at"
+    },
+    {
+      "column": "Duration (in seconds)",
+      "role": "duration_seconds"
+    },
+    {
+      "column": "IPAddress",
+      "role": "ip"
+    },
+    {
+      "column": "FirstName",
+      "role": "other"
+    },
+    {
+      "column": "Email",
+      "role": "payout_email"
+    },
+    {
+      "column": "Phone",
+      "role": "payout_phone"
+    },
+    {
+      "column": "Age",
+      "role": "age"
+    },
+    {
+      "column": "DateOfBirth",
+      "role": "date_of_birth"
+    },
+    {
+      "column": "Student",
+      "role": "eligibility"
+    },
+    {
+      "column": "Q1_SleepHours",
+      "role": "other"
+    },
+    {
+      "column": "Q2_PhoneInBed",
+      "role": "other"
+    },
+    {
+      "column": "Q14_Attention",
+      "role": "attention_check",
+      "expectedValue": "Strongly disagree"
+    },
+    {
+      "column": "hp_website",
+      "role": "honeypot"
+    },
+    {
+      "column": "Q3_KeepsAwake",
+      "role": "open_text",
+      "questionText": "Describe what usually keeps you awake the night before an exam.",
+      "contextColumns": [
+        "Q1_SleepHours",
+        "Q2_PhoneInBed"
+      ]
+    },
+    {
+      "column": "Q4_OneChange",
+      "role": "open_text",
+      "questionText": "What one change would most improve your sleep during term?",
+      "contextColumns": [
+        "Q1_SleepHours",
+        "Q2_PhoneInBed"
+      ]
+    }
+  ]
+}

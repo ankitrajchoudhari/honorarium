@@ -1,0 +1,92 @@
+{
+  "compiledBy": "gemini:gemini-3.5-flash-lite",
+  "promptVersion": "compile-rules-v2",
+  "compiledAt": "2026-10-27T13:49:30.144Z",
+  "ruleSet": {
+    "rules": [
+      {
+        "id": "r1",
+        "outcome_on_fail": "exclude",
+        "type": "min_duration",
+        "params": {
+          "seconds": 240
+        }
+      },
+      {
+        "id": "r2",
+        "outcome_on_fail": "exclude",
+        "type": "attention_check",
+        "params": {
+          "checks": [
+            {
+              "field": {
+                "by": "column",
+                "name": "Q14"
+              },
+              "expected": "Strongly disagree"
+            }
+          ],
+          "max_failures": 0
+        }
+      },
+      {
+        "id": "r3",
+        "outcome_on_fail": "exclude",
+        "type": "honeypot",
+        "params": {
+          "field": {
+            "by": "role",
+            "name": "honeypot"
+          }
+        }
+      },
+      {
+        "id": "r4",
+        "outcome_on_fail": "exclude",
+        "type": "one_payment_per_identity",
+        "params": {
+          "keep": "earliest"
+        }
+      },
+      {
+        "id": "r5",
+        "outcome_on_fail": "exclude",
+        "type": "eligibility",
+        "params": {
+          "field": {
+            "by": "role",
+            "name": "age"
+          },
+          "min": 18,
+          "max": 30
+        }
+      },
+      {
+        "id": "r6",
+        "outcome_on_fail": "review",
+        "type": "age_dob_consistency",
+        "params": {
+          "age_field": {
+            "by": "role",
+            "name": "age"
+          },
+          "dob_field": {
+            "by": "role",
+            "name": "date_of_birth"
+          },
+          "tolerance_years": 0
+        }
+      },
+      {
+        "id": "r7",
+        "outcome_on_fail": "review",
+        "type": "submission_burst",
+        "params": {
+          "window_seconds": 60,
+          "max_in_window": 25
+        }
+      }
+    ]
+  },
+  "couldNotCompile": []
+}

@@ -1,0 +1,1 @@
+ALTER TABLE "question_map" ADD COLUMN "context_columns" jsonb DEFAULT '[]'::jsonb NOT NULL;

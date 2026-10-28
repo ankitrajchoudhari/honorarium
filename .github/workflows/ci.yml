@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # Placeholders so the build can validate its config shape; no step here calls PayPal, Gemini or the database.
+      PAYPAL_ENV: sandbox
+      PAYPAL_CLIENT_ID: ci-placeholder
+      PAYPAL_CLIENT_SECRET: ci-placeholder
+      GEMINI_API_KEY: ci-placeholder
+      GEMINI_MODEL: ci-placeholder
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      APP_BASE_URL: http://localhost:3000
+      SESSION_SECRET: 0000000000000000000000000000000000000000000000000000000000000000
+      AI_DAILY_CALL_LIMIT: "400"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
