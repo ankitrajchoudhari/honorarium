@@ -5,7 +5,8 @@ const isDev = process.env.NODE_ENV !== "production";
 // Next.js injects inline bootstrap scripts, so scripts allow 'unsafe-inline'; everything else is same-origin only.
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  // 'wasm-unsafe-eval' lets the Lottie player compile its WebAssembly engine; it does not allow JavaScript eval.
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",

@@ -2,6 +2,7 @@
 
 import { MdVisibility } from "react-icons/md";
 import { useCallback, useEffect, useState } from "react";
+import { AiAnimation } from "@/components/ai-animation";
 import { DecisionChip, EvidenceChip, LocalTime } from "@/components/ui";
 import type { Decision } from "@/engine/types";
 import { formatCents } from "@/lib/money";
@@ -118,8 +119,18 @@ export function RespondentEvidence({ studyId, detail }: { studyId: string; detai
 
       {layers.map(({ layer, checks }) =>
         checks.length === 0 ? null : (
-          <section key={layer}>
-            <h4 className="mb-1 font-semibold">{LAYER_LABEL[layer]}</h4>
+          <section key={layer} className={layer === "ai" ? "rounded-md border border-primary/25 bg-primary-soft p-3" : undefined}>
+            {layer === "ai" ? (
+              <div className="mb-2 flex items-center gap-2">
+                <AiAnimation kind="thinking" size={36} once />
+                <div>
+                  <h4 className="font-semibold">{LAYER_LABEL[layer]}</h4>
+                  <p className="text-xs text-muted">Gemini&apos;s notes on the open-text answers. A flag only sends a response to a person; it never denies payment.</p>
+                </div>
+              </div>
+            ) : (
+              <h4 className="mb-1 font-semibold">{LAYER_LABEL[layer]}</h4>
+            )}
             <ul className="space-y-1.5">
               {checks.map((check) => (
                 <li key={check.ruleId} className="space-y-0.5">

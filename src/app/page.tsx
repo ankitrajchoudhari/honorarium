@@ -4,10 +4,11 @@ import { openSampleStudyAction } from "@/app/actions/studies";
 import { PendingButton } from "@/components/pending-button";
 import { MiniRing } from "@/components/rings";
 import { Shell } from "@/components/shell";
-import { BalanceCard, Card, LinkButton, LocalTime } from "@/components/ui";
+import { LinkButton, LocalTime, PaymentCard } from "@/components/ui";
 import { listStudies } from "@/db/queries";
 import { formatCents } from "@/lib/money";
 import { currentWorkspace } from "@/lib/session";
+import { sampleStudySummary } from "@/studies/sample";
 
 const STATUS_TEXT: Record<string, string> = {
   draft: "Writing rules",
@@ -20,16 +21,16 @@ const STATUS_TEXT: Record<string, string> = {
 };
 
 const STEPS = [
-  { title: "Lock the rules", text: "Write exclusion rules in plain English. Gemini compiles them into exact checks, and you lock them before seeing any data." },
-  { title: "Verify every response", text: "Rule checks, near-duplicate detection and AI review sort each respondent into Pay, Hold for review or Don't pay." },
-  { title: "Decide the holds", text: "A person reviews each hold with the evidence. AI can flag a response, but it can never deny payment." },
+  { title: "Lock the rules", text: "Plain-English exclusion rules, compiled by Gemini into exact checks and locked before you see any data." },
+  { title: "Verify every response", text: "Rule checks, near-duplicate detection and AI review sort each respondent into Pay, Hold or Don't pay." },
+  { title: "Decide the holds", text: "A person reviews each hold with the evidence. AI can flag a response, but never deny payment." },
   { title: "Pay through PayPal", text: "The PI approves one batch, PayPal Payouts sends it, and the ledger accounts for every cent." },
 ];
 
-function SampleButton({ onNavy }: { onNavy: boolean }) {
+function SampleButton() {
   return (
     <form action={openSampleStudyAction}>
-      <PendingButton variant="primary" className={onNavy ? "bg-white! text-navy! hover:bg-primary-soft!" : ""} pendingText="Setting up the sample study…">
+      <PendingButton variant="primary" pendingText="Setting up the sample study…">
         Open the sample study <MdArrowForward size={18} aria-hidden />
       </PendingButton>
     </form>
@@ -40,16 +41,50 @@ function initials(code: string): string {
   return code.replace(/[^A-Z0-9]/g, "").slice(0, 2);
 }
 
+function Tile({ label, value, accent }: { label: string; value: string; accent: string }) {
+  return (
+    <div className="relative overflow-hidden rounded-lg border border-rule bg-surface p-5">
+      <span aria-hidden className={`absolute inset-y-0 left-0 w-1 ${accent}`} />
+      <p className="text-sm font-semibold text-muted">{label}</p>
+      <p className="mt-1 font-mono text-[28px] font-semibold leading-none tabular">{value}</p>
+    </div>
+  );
+}
+
+async function EmptyState() {
+  const sample = await sampleStudySummary();
+  return (
+    <section className="grid items-center gap-8 rounded-lg border border-rule bg-surface p-6 md:grid-cols-[minmax(0,420px)_minmax(0,1fr)] md:p-8">
+      <PaymentCard
+        label="Sample study budget"
+        amount={formatCents(sample.budgetCents)}
+        facts={[
+          { label: "Responses", value: sample.responses.toLocaleString("en-US") },
+          { label: "Per participant", value: formatCents(sample.amountPerParticipantCents) },
+        ]}
+      />
+      <div className="space-y-4">
+        <p className="text-sm font-bold uppercase tracking-wide text-primary">Try it in two clicks</p>
+        <h2 className="text-xl font-extrabold leading-snug">Open links attract bots. Pay only the people who took part.</h2>
+        <p className="text-muted">
+          The sample study has {sample.responses} synthetic responses from an open survey link, including a burst of {sample.botBurst} bot submissions. Its rules are already
+          locked, so verification starts right away.
+        </p>
+        <SampleButton />
+      </div>
+    </section>
+  );
+}
+
 export default async function Home() {
   const workspace = await currentWorkspace();
   const rows = workspace ? await listStudies(workspace.id) : [];
   const hasSample = rows.some((row) => row.study.isSample);
-  const budget = rows.reduce((sum, row) => sum + row.study.budgetCents, 0);
-  const responses = rows.reduce((sum, row) => sum + row.respondents, 0);
+  const total = (pick: (row: (typeof rows)[number]) => number) => rows.reduce((sum, row) => sum + pick(row), 0);
 
   return (
     <Shell>
-      <main id="main" className="mx-auto max-w-[1280px] space-y-6 px-4 py-8">
+      <main id="main" className="mx-auto max-w-[1280px] space-y-8 px-4 py-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight">Studies</h1>
@@ -57,7 +92,7 @@ export default async function Home() {
           </div>
           {rows.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {!hasSample && <SampleButton onNavy={false} />}
+              {!hasSample && <SampleButton />}
               <LinkButton href="/studies/new" variant="secondary">
                 <MdAdd size={18} aria-hidden /> New study
               </LinkButton>
@@ -65,59 +100,26 @@ export default async function Home() {
           )}
         </div>
 
-        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-          {rows.length === 0 ? (
-            <section className="relative overflow-hidden rounded-lg bg-navy p-8 text-on-navy">
-              <div aria-hidden className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full border-[36px] border-white/[0.06]" />
-              <div aria-hidden className="pointer-events-none absolute -bottom-28 right-32 h-56 w-56 rounded-full border-[26px] border-white/[0.04]" />
-              <div className="relative max-w-lg space-y-4">
-                <p className="text-sm font-semibold text-on-navy/75">Get started</p>
-                <h2 className="text-xl font-extrabold leading-snug sm:text-2xl">Open links attract bots. Pay only the people who took part.</h2>
-                <p className="text-on-navy/80">
-                  The sample study has 518 synthetic responses from an open survey link, including a burst of 300 bot submissions. Its rules are already locked, so
-                  verification starts right away.
-                </p>
-                <div className="flex flex-wrap gap-3 pt-1">
-                  <SampleButton onNavy />
-                  <LinkButton href="/studies/new" className="border-white/70! bg-transparent! text-on-navy! hover:bg-white/10!">
-                    <MdAdd size={18} aria-hidden /> New study
-                  </LinkButton>
-                </div>
-              </div>
-            </section>
-          ) : (
-            <BalanceCard label="Total study budget" amount={formatCents(budget)}>
-              <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
-                <div>
-                  <dt className="text-on-navy/70">Studies</dt>
-                  <dd className="font-mono text-lg font-semibold tabular">{rows.length}</dd>
-                </div>
-                <div>
-                  <dt className="text-on-navy/70">Responses imported</dt>
-                  <dd className="font-mono text-lg font-semibold tabular">{responses.toLocaleString("en-US")}</dd>
-                </div>
-                <div>
-                  <dt className="text-on-navy/70">Decided to pay</dt>
-                  <dd className="font-mono text-lg font-semibold tabular">{rows.reduce((sum, row) => sum + row.pay, 0)}</dd>
-                </div>
-              </dl>
-            </BalanceCard>
-          )}
-
-          <Card title="How it works" level={2}>
-            <ol className="space-y-4">
-              {STEPS.map((step, index) => (
-                <li key={step.title} className="flex gap-3">
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 border-primary font-mono text-xs font-bold text-primary">{index + 1}</span>
-                  <div>
-                    <p className="font-bold">{step.title}</p>
-                    <p className="text-sm text-muted">{step.text}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </Card>
-        </div>
+        {rows.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <section aria-label="Workspace summary" className="grid items-center gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+            <PaymentCard
+              label="Total study budget"
+              amount={formatCents(total((row) => row.study.budgetCents))}
+              facts={[
+                { label: rows.length === 1 ? "Study" : "Studies", value: String(rows.length) },
+                { label: "Responses", value: total((row) => row.respondents).toLocaleString("en-US") },
+              ]}
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Tile label="Decided to pay" value={String(total((row) => row.pay))} accent="bg-pay" />
+              <Tile label="Held for review" value={String(total((row) => row.hold))} accent="bg-hold" />
+              <Tile label="Don't pay" value={String(total((row) => row.dontPay))} accent="bg-dont-pay" />
+              <Tile label="Responses imported" value={total((row) => row.respondents).toLocaleString("en-US")} accent="bg-primary" />
+            </div>
+          </section>
+        )}
 
         {rows.length > 0 && (
           <section aria-labelledby="studies-heading" className="rounded-lg border border-rule bg-surface">
@@ -153,7 +155,7 @@ export default async function Home() {
                         ))}
                       </div>
                     )}
-                    <span className="font-mono text-sm font-semibold tabular">{respondents} responses</span>
+                    <span className="hidden font-mono text-sm font-semibold tabular sm:inline">{respondents} responses</span>
                     <MdChevronRight size={22} aria-hidden className="shrink-0 text-muted" />
                   </Link>
                 </li>
@@ -161,6 +163,21 @@ export default async function Home() {
             </ul>
           </section>
         )}
+
+        <section aria-labelledby="how-heading">
+          <h2 id="how-heading" className="mb-4 text-md font-bold">
+            How it works
+          </h2>
+          <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map((step, index) => (
+              <li key={step.title} className="rounded-lg border border-rule bg-surface p-5">
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-navy font-mono text-sm font-bold text-on-navy">{index + 1}</span>
+                <p className="mt-3 font-bold">{step.title}</p>
+                <p className="mt-1 text-sm text-muted">{step.text}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
       </main>
     </Shell>
   );

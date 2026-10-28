@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import { useMemo, useState } from "react";
 import { MdClose, MdSearch } from "react-icons/md";
+import { AiIntro } from "@/components/ai-intro";
 import { CheckList, SubmissionTimeline, type ReasonRow, type TimeBin } from "@/components/charts";
 import { Rings } from "@/components/rings";
 import { DataGrid } from "@/components/data-grid";
@@ -90,6 +91,9 @@ export function VerifyView({ studyId, results, counts, reasons, timeline, initia
 
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <AiIntro />
+      </div>
       <JobRunner studyId={studyId} initial={initialJob} autoStart={initialJob === null} />
       {stale && <Notice tone="warning" title={`Rules v${ruleVersion} are now locked`}>These results came from v{jobRuleVersion}. Run verification again to apply the new rules.</Notice>}
 

@@ -6,9 +6,10 @@ import { MdCancel, MdCheckCircle, MdRefresh } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { approvePayoutAction, cancelUnclaimedAction, refreshStatusesAction, retrySendAction, type PayoutActionResult } from "@/app/actions/payouts";
+import { StatusPanel } from "@/components/ai-animation";
 import { Rings } from "@/components/rings";
 import { DataGrid } from "@/components/data-grid";
-import { Button, inputClass, LinkButton, LocalTime, Notice, Section, tableClass, tdClass, thClass } from "@/components/ui";
+import { Button, inputClass, LinkButton, LocalTime, Section, tableClass, tdClass, thClass } from "@/components/ui";
 import type { PreflightCheck } from "@/payouts/preflight";
 import { formatCents } from "@/lib/money";
 
@@ -215,12 +216,12 @@ export function PayoutsView(props: Props) {
       <div aria-live="polite">
         {result &&
           (result.ok ? (
-            <Notice title={result.message} role="status" />
+            <StatusPanel kind="success" title={result.message} />
           ) : (
-            <Notice tone="error" title="PayPal action did not complete">
+            <StatusPanel kind="failed" title="PayPal action did not complete">
               {result.error}
               {result.debugId ? <span className="block font-mono text-xs">PayPal debug_id {result.debugId}</span> : null}
-            </Notice>
+            </StatusPanel>
           ))}
       </div>
 

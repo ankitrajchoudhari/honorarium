@@ -20,7 +20,7 @@ export function MoneyStrip({ balances, budgetCents, size = "thin" }: { balances:
   const segments = ORDER.filter((entry) => balances[entry.bucket] > 0);
   return (
     <Tooltip.Provider delayDuration={100}>
-      <div className="space-y-1.5">
+      <div className="space-y-2.5">
         <div
           role="group"
           aria-label={`Budget ${formatCents(budgetCents)}: ${ORDER.map((entry) => `${BUCKET_LABELS[entry.bucket]} ${formatCents(balances[entry.bucket])}`).join(", ")}`}
@@ -45,17 +45,24 @@ export function MoneyStrip({ balances, budgetCents, size = "thin" }: { balances:
             </Tooltip.Root>
           ))}
         </div>
-        <ul className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted">
-          {ORDER.filter((entry) => entry.bucket !== "withheld" || balances.withheld > 0).map((entry) => (
-            <li key={entry.bucket} className="inline-flex items-center gap-1.5">
-              <span aria-hidden className={`inline-block h-2.5 w-2.5 rounded-full ${entry.color}`} />
-              {BUCKET_LABELS[entry.bucket]} <span className="font-mono tabular text-ink">{formatCents(balances[entry.bucket])}</span>
-            </li>
-          ))}
-          <li className="inline-flex items-center gap-1.5">
-            Budget <span className="font-mono tabular text-ink">{formatCents(budgetCents)}</span>
-          </li>
-        </ul>
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 pt-1 sm:grid-cols-4 lg:grid-cols-7">
+          {ORDER.filter((entry) => entry.bucket !== "withheld" || balances.withheld > 0).map((entry) => {
+            const empty = balances[entry.bucket] === 0;
+            return (
+              <div key={entry.bucket} className={`min-w-0 ${empty ? "opacity-55" : ""}`}>
+                <dt className="flex items-center gap-1.5 truncate text-xs text-muted">
+                  <span aria-hidden className={`h-3 w-1 shrink-0 rounded-full ${entry.color}`} />
+                  {BUCKET_LABELS[entry.bucket]}
+                </dt>
+                <dd className="mt-0.5 font-mono text-sm font-semibold tabular">{formatCents(balances[entry.bucket])}</dd>
+              </div>
+            );
+          })}
+          <div className="min-w-0 lg:border-l lg:border-rule lg:pl-4">
+            <dt className="truncate text-xs font-semibold text-muted">Budget</dt>
+            <dd className="mt-0.5 font-mono text-sm font-bold tabular">{formatCents(budgetCents)}</dd>
+          </div>
+        </dl>
       </div>
     </Tooltip.Provider>
   );

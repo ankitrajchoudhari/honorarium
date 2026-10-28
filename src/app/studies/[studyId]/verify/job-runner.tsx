@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { finishWithoutAiAction, resumeJobAction, startVerificationAction } from "@/app/actions/verify";
+import { MdAutoAwesome } from "react-icons/md";
+import { StatusPanel } from "@/components/ai-animation";
 import { Button, Notice } from "@/components/ui";
 import type { JobState } from "@/jobs/verify";
 
@@ -112,9 +114,12 @@ export function JobRunner({ studyId, initial, autoStart }: { studyId: string; in
             detail = "Done";
           }
           return (
-            <li key={phase.key} className={`rounded-sm border px-3 py-2 ${active ? "border-primary" : "border-rule"}`}>
+            <li key={phase.key} className={`rounded-md border px-3 py-2.5 ${active ? "border-primary bg-primary-soft" : "border-rule"}`}>
               <div className="flex items-center justify-between text-sm font-semibold">
-                {phase.label}
+                <span className="inline-flex items-center gap-1.5">
+                  {phase.key === "ai" && <MdAutoAwesome size={16} aria-hidden className="text-primary" />}
+                  {phase.label}
+                </span>
                 <span className={`text-xs ${done ? "text-pay" : active ? "text-primary" : "text-muted"}`}>{done ? "Done" : active ? "Running" : "Waiting"}</span>
               </div>
               <div className="font-mono text-xs text-muted tabular">{detail}</div>
@@ -122,14 +127,26 @@ export function JobRunner({ studyId, initial, autoStart }: { studyId: string; in
           );
         })}
       </ol>
-      <p aria-live="polite" className="text-sm text-muted">
-        {state.status === "running" && state.phase === "ai" && `Reviewing answers ${aiRange} with Gemini, about 4 seconds per group of 20 to stay within the free rate limit.`}
-        {state.status === "running" && state.phase !== "ai" && "Working. You can leave this page; verification resumes where it stopped."}
-        {state.status === "done" && "Verification finished. Counts and decisions below are from this run."}
-      </p>
+      <div aria-live="polite">
+        {state.status === "running" && state.phase === "ai" && (
+          <StatusPanel kind="thinking" title={`Gemini is reviewing answers ${aiRange}`}>
+            It flags answers that are off topic, contradict the respondent&apos;s own choices, are gibberish or read like a generic template. Flags only send a response to a
+            person; they never deny payment. About 4 seconds per group of 20.
+          </StatusPanel>
+        )}
+        {state.status === "running" && state.phase !== "ai" && <p className="text-sm text-muted">Working. You can leave this page; verification resumes where it stopped.</p>}
+        {state.status === "done" && (
+          <StatusPanel kind="success" title="Verification finished">
+            {state.aiTotal > 0 ? `Gemini reviewed ${state.aiDone - state.aiNotRun} of ${state.aiTotal} open-text answers.` : "No open-text answers needed AI review."} Counts and decisions
+            below are from this run.
+          </StatusPanel>
+        )}
+      </div>
       {state.status === "paused" && state.paused && (
-        <Notice tone="warning" title={state.paused.kind === "cap_reached" ? "AI review is paused for today" : "AI review is paused"}>
-          <p>{state.paused.message} Rule checks and similarity already ran. Answers not yet reviewed are held, not paid.</p>
+        <div className="space-y-2">
+          <StatusPanel kind="failed" title={state.paused.kind === "cap_reached" ? "AI review is paused for today" : "AI review is paused"}>
+            {state.paused.message} Rule checks and similarity already ran. Answers not yet reviewed are held, not paid.
+          </StatusPanel>
           <div className="mt-2 flex flex-wrap gap-2">
             <Button
               onClick={async () => {
@@ -154,9 +171,13 @@ export function JobRunner({ studyId, initial, autoStart }: { studyId: string; in
               Finish without AI review
             </Button>
           </div>
-        </Notice>
+        </div>
       )}
-      {state.status === "failed" && <Notice tone="error" title="Verification stopped after repeated errors">{state.lastError ?? "Unknown error."} Run it again to retry.</Notice>}
+      {state.status === "failed" && (
+        <StatusPanel kind="failed" title="Verification stopped after repeated errors">
+          {state.lastError ?? "Unknown error."} Run it again to retry.
+        </StatusPanel>
+      )}
       {(state.status === "done" || state.status === "failed") && (
         <Button onClick={() => void start()} variant="ghost">
           Run verification again

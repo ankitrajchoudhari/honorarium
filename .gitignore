@@ -48,3 +48,6 @@ CLAUDE.md
 # playwright
 /test-results/
 /playwright-report/
+
+# copied from node_modules on install (scripts/copy-lottie-wasm.mjs)
+/public/animations/dotlottie-player.wasm

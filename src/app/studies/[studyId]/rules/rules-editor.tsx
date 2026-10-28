@@ -4,6 +4,7 @@ import { MdLock } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { compileRulesAction, lockRulesAction, newRuleVersionAction, saveRulesAction, type RulesActionResult } from "@/app/actions/rules";
+import { StatusPanel } from "@/components/ai-animation";
 import { Button, inputClass, LocalTime, Notice, tableClass, tdClass, thClass } from "@/components/ui";
 import { ruleSetSchema, type FieldRef, type Rule, type RuleSet } from "@/engine/dsl";
 import { readBack } from "@/engine/readback";
@@ -91,13 +92,19 @@ export function RulesEditor({ studyId, version, sourceText, ruleSet, couldNotCom
   const [result, setResult] = useState<RulesActionResult | null>(null);
   const [pending, startTransition] = useTransition();
   const [busy, setBusy] = useState<string | null>(null);
+  const [compiled, setCompiled] = useState<RulesActionResult | null>(null);
 
   const validation = ruleSetSchema.safeParse({ rules });
   const run = (label: string, action: () => Promise<RulesActionResult>) => {
     setBusy(label);
     startTransition(async () => {
       const outcome = await action();
-      setResult(outcome);
+      if (label === "compile") {
+        setCompiled(outcome);
+        setResult(null);
+      } else {
+        setResult(outcome);
+      }
       setBusy(null);
       if (outcome.ok) {
         setDirty(false);
@@ -144,6 +151,16 @@ export function RulesEditor({ studyId, version, sourceText, ruleSet, couldNotCom
               </Button>
               <span className="text-xs text-muted">Sends only this text to Gemini. No response data exists yet.</span>
             </div>
+          )}
+          {busy === "compile" && (
+            <StatusPanel kind="thinking" title="Gemini is reading your rules">
+              Each sentence becomes an exact check you can edit. Anything it cannot turn into a rule is listed for you to rewrite. Usually 5–15 seconds.
+            </StatusPanel>
+          )}
+          {busy !== "compile" && compiled && (
+            <StatusPanel kind={compiled.ok ? "success" : "failed"} title={compiled.ok ? (compiled.message ?? "Rules compiled.") : "Gemini could not compile these rules"}>
+              {compiled.ok ? "Read each rule back below and adjust thresholds before you lock them." : compiled.error}
+            </StatusPanel>
           )}
           {compiledBy && <p className="text-xs text-muted">Compiled by {compiledBy.replace("gemini:", "Gemini ")}</p>}
         </section>

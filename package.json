@@ -17,10 +17,12 @@
     "sample:generate": "tsx scripts/generate-sample.ts",
     "sample:rules": "tsx --conditions=react-server scripts/compile-sample-rules.ts",
     "test:e2e": "playwright test",
-    "test:integration": "vitest run --config vitest.integration.mts"
+    "test:integration": "vitest run --config vitest.integration.mts",
+    "postinstall": "node scripts/copy-lottie-wasm.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.31.0",
+    "@lottiefiles/dotlottie-react": "^0.20.0",
     "@neondatabase/serverless": "^1.2.0",
     "@radix-ui/react-dialog": "^1.3.1",
     "@radix-ui/react-tooltip": "^1.4.1",

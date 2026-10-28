@@ -2,7 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import { MdCheckCircle, MdErrorOutline } from "react-icons/md";
 import { Rings } from "@/components/rings";
-import { BalanceCard, Button, Card, inputClass, LocalTime, PageTitle, tableClass, tdClass, thClass } from "@/components/ui";
+import { Button, Card, PaymentCard, inputClass, LocalTime, PageTitle, tableClass, tdClass, thClass } from "@/components/ui";
 import { db } from "@/db/client";
 import { ledgerEntries, respondents } from "@/db/schema";
 import { getStudyOr404 } from "@/db/study-page";
@@ -38,34 +38,36 @@ export default async function LedgerPage({ params, searchParams }: PageProps<"/s
   return (
     <div className="space-y-6">
       <PageTitle description="Every movement of money is an append-only entry. Rows are never edited or deleted.">Budget ledger</PageTitle>
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-        <BalanceCard label="Study budget" amount={formatCents(study.budgetCents)}>
-          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-            <div>
-              <dt className="text-on-navy/70">Paid</dt>
-              <dd className="font-mono text-lg font-semibold tabular">{formatCents(ledger.balances.paid)}</dd>
-            </div>
-            <div>
-              <dt className="text-on-navy/70">Unallocated</dt>
-              <dd className="font-mono text-lg font-semibold tabular">{formatCents(ledger.balances.unallocated)}</dd>
-            </div>
-          </dl>
-          <div aria-live="polite" className="mt-5 rounded-md bg-white/10 px-4 py-3">
-            <p className="flex items-center gap-2 font-bold">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+        <div className="space-y-4">
+          <PaymentCard
+            label="Study budget"
+            amount={formatCents(study.budgetCents)}
+            tag={study.shortCode}
+            facts={[
+              { label: "Paid", value: formatCents(ledger.balances.paid) },
+              { label: "Unallocated", value: formatCents(ledger.balances.unallocated) },
+            ]}
+          />
+          <div
+            aria-live="polite"
+            className={`rounded-lg border px-5 py-4 ${ledger.invariant.balanced ? "border-pay/30 bg-pay-soft" : "border-dont-pay/30 bg-dont-pay-soft"}`}
+          >
+            <p className={`flex items-center gap-2 font-bold ${ledger.invariant.balanced ? "text-pay" : "text-dont-pay"}`}>
               {ledger.invariant.balanced ? <MdCheckCircle size={20} aria-hidden /> : <MdErrorOutline size={20} aria-hidden />}
               {ledger.invariant.balanced ? "The books balance" : `Out of balance by ${formatCents(ledger.invariant.difference)}`}
             </p>
-            <p className="mt-1 font-mono text-xs text-on-navy/80 tabular">
+            <p className="mt-1 font-mono text-xs tabular">
               {formatCents(study.budgetCents)} {ledger.invariant.balanced ? "=" : "≠"} {sum}
             </p>
-            <p className="mt-1 text-xs text-on-navy/70">budget = unallocated + allocated + held + in flight + paid + unclaimed + withheld · checked inside every write</p>
+            <p className="mt-1 text-xs text-muted">budget = unallocated + allocated + held + in flight + paid + unclaimed + withheld · checked inside every write</p>
           </div>
-        </BalanceCard>
+        </div>
         <Card title="Where the budget is" description="Each ring is one bucket's share of the budget.">
           <Rings
             label="Budget by ledger bucket"
-            size={210}
-            thickness={13}
+            size={240}
+            thickness={11}
             rings={[
               { label: "Paid", value: ledger.balances.paid, max: study.budgetCents, color: "var(--pay)", display: formatCents(ledger.balances.paid) },
               { label: "In flight", value: ledger.balances.in_flight, max: study.budgetCents, color: "var(--in-flight)", display: formatCents(ledger.balances.in_flight) },

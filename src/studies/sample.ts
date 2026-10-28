@@ -8,6 +8,7 @@ import { studies } from "@/db/schema";
 import { ruleSetSchema } from "@/engine/dsl";
 import { importMappingSchema } from "@/import/mapping";
 import { importCsv } from "@/import/service";
+import { decodeCsvBytes, parseCsvText } from "@/lib/csv";
 import { createStudy, lockRules, saveDraftRules } from "@/studies/service";
 
 const SAMPLE_DIR = join(process.cwd(), "data", "sample");
@@ -87,4 +88,27 @@ export async function createSampleStudy(workspaceId: string): Promise<string> {
     await importCsv(tx, locked, actor, SAMPLE_CSV, new Uint8Array(csv), mapping);
   });
   return study.id;
+}
+
+export interface SampleSummary {
+  budgetCents: number;
+  amountPerParticipantCents: number;
+  responses: number;
+  botBurst: number;
+}
+
+/** Facts about the sample study for the empty home page, read from the sample files rather than written into the UI. */
+export async function sampleStudySummary(): Promise<SampleSummary> {
+  const [details, manifest, csv] = await Promise.all([
+    readJson("study.json", sampleStudySchema),
+    readJson("manifest.json", z.record(z.string(), z.array(z.string()))),
+    readFile(join(SAMPLE_DIR, SAMPLE_CSV)),
+  ]);
+  const parsed = parseCsvText(decodeCsvBytes(new Uint8Array(csv)).text);
+  return {
+    budgetCents: details.budgetCents,
+    amountPerParticipantCents: details.amountPerParticipantCents,
+    responses: parsed.ok ? parsed.csv.rows.length : 0,
+    botBurst: manifest.bot_burst?.length ?? 0,
+  };
 }

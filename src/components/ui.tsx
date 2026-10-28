@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import type { IconType } from "react-icons";
 import { MdBlock, MdCancel, MdCheckCircle, MdErrorOutline, MdInfoOutline, MdPauseCircle, MdWarningAmber } from "react-icons/md";
+import { LogoMark } from "@/components/brand";
 import { LocalTimeText } from "@/components/local-time";
 import type { Decision } from "@/engine/types";
 
@@ -110,15 +111,62 @@ export function Card({
   );
 }
 
-/** The navy "balance" card: one large amount with its context, like a wallet balance. */
-export function BalanceCard({ label, amount, children }: { label: string; amount: ReactNode; children?: ReactNode }) {
+/** Decorative EMV chip for the payment card. */
+function CardChip() {
   return (
-    <section className="relative min-w-0 overflow-hidden rounded-lg bg-navy p-6 text-on-navy">
-      <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full border-[28px] border-white/[0.06]" />
-      <div aria-hidden className="pointer-events-none absolute -bottom-24 right-20 h-48 w-48 rounded-full border-[22px] border-white/[0.04]" />
-      <p className="relative text-sm font-semibold text-on-navy/75">{label}</p>
-      <p className="relative mt-1 font-mono text-[34px] font-semibold leading-tight tabular">{amount}</p>
-      {children && <div className="relative mt-4">{children}</div>}
+    <svg width="44" height="34" viewBox="0 0 44 34" aria-hidden>
+      <defs>
+        <linearGradient id="chip-gold" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#f6dd9a" />
+          <stop offset="0.5" stopColor="#d8b45a" />
+          <stop offset="1" stopColor="#b48a2c" />
+        </linearGradient>
+      </defs>
+      <rect x="0.5" y="0.5" width="43" height="33" rx="6" fill="url(#chip-gold)" stroke="#8a6a1f" strokeOpacity="0.5" />
+      <path d="M0.5 12H14M0.5 22H14M30 12H43.5M30 22H43.5M14 0.5V33.5M30 0.5V33.5M14 17H30" stroke="#8a6a1f" strokeOpacity="0.55" fill="none" />
+    </svg>
+  );
+}
+
+/**
+ * A credit-card style summary: one large amount, two labelled facts underneath and the Honorarium wordmark.
+ * Every number on it is real data passed in; the chip and guilloché lines are decoration only.
+ */
+export function PaymentCard({ label, amount, facts, tag = "Sandbox" }: { label: string; amount: ReactNode; facts: { label: string; value: ReactNode }[]; tag?: string }) {
+  return (
+    <section className="relative aspect-[1.586] w-full max-w-[420px] overflow-hidden rounded-[22px] bg-[linear-gradient(135deg,#001c64_0%,#0a3a9e_55%,#2f7bff_100%)] p-6 text-white shadow-[0_18px_40px_-12px_rgb(0_28_100/0.55)]">
+      <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.16]" viewBox="0 0 420 265" preserveAspectRatio="none">
+        {Array.from({ length: 9 }, (_, index) => (
+          <path key={index} d={`M-20 ${190 + index * 9} C 90 ${120 + index * 9}, 230 ${250 + index * 9}, 440 ${150 + index * 9}`} fill="none" stroke="white" strokeWidth="1" />
+        ))}
+      </svg>
+      <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
+      <div className="relative flex h-full flex-col">
+        <div className="flex items-start justify-between">
+          <span className="inline-flex items-center gap-2 text-md font-extrabold tracking-tight">
+            <LogoMark size={24} /> Honorarium
+          </span>
+          <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider">{tag}</span>
+        </div>
+        <div className="mt-4 flex items-center gap-3">
+          <CardChip />
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden className="opacity-80">
+            <path d="M8 6a9 9 0 0 1 0 12M12 4a12 12 0 0 1 0 16M16 2a15 15 0 0 1 0 20" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </div>
+        <div className="mt-auto">
+          <p className="text-xs font-semibold uppercase tracking-wider text-white/70">{label}</p>
+          <p className="font-mono text-[30px] font-semibold leading-tight tracking-tight tabular">{amount}</p>
+          <dl className="mt-2 flex gap-6">
+            {facts.map((fact) => (
+              <div key={fact.label}>
+                <dt className="text-[10px] font-bold uppercase tracking-wider text-white/60">{fact.label}</dt>
+                <dd className="font-mono text-sm font-semibold tabular">{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
     </section>
   );
 }

@@ -6,7 +6,11 @@ test("sample study: verify, review two holds, pay through the PayPal sandbox", a
   await page.waitForURL(/\/studies\/[0-9a-f-]+\/verify$/, { timeout: 120_000 });
   const studyUrl = page.url().replace(/\/verify$/, "");
 
-  await expect(page.getByText("Verification finished.")).toBeVisible({ timeout: 12 * 60_000 });
+  // First visit: the AI intro explains what Gemini does and does not do, then is dismissed.
+  await expect(page.getByRole("dialog", { name: "It flags. People decide." })).toBeVisible();
+  await page.getByRole("button", { name: "Got it" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByText("Verification finished")).toBeVisible({ timeout: 12 * 60_000 });
   const counter = (label: string) => page.getByRole("button", { name: new RegExp(`^${label}`) });
   await expect(counter("Pay")).toBeVisible();
   await expect(counter("Hold for review")).toBeVisible();
