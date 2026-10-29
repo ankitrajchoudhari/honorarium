@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Transaction } from "@/db/client";
 import { audit } from "@/db/audit";
@@ -114,7 +114,9 @@ export async function lockRules(tx: Transaction, study: Study, actor: string): P
     throw new StudyError("Compile at least one valid rule before locking.");
   }
   const sha256 = hashCanonical(parsed.data);
-  await tx.update(ruleSets).set({ lockedAt: new Date(), lockedBy: actor, sha256 }).where(eq(ruleSets.id, latest.id));
+  // The database clock, like every created_at: locking and importing in one transaction then compare as simultaneous
+  // rather than the app clock making the lock look later than an import that came after it.
+  await tx.update(ruleSets).set({ lockedAt: sql`now()`, lockedBy: actor, sha256 }).where(eq(ruleSets.id, latest.id));
   if (study.status === "draft") {
     await touchStudy(tx, study.id, "rules_locked");
   }

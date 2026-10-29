@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { MdAdd, MdArrowForward, MdChevronRight } from "react-icons/md";
 import { openSampleStudyAction } from "@/app/actions/studies";
-import { PendingButton } from "@/components/pending-button";
+import { AiAnimation } from "@/components/ai-animation";
+import { ActionForm, ActionSubmit } from "@/components/action-form";
 import { MiniRing } from "@/components/rings";
 import { Shell } from "@/components/shell";
 import { LinkButton, LocalTime, PaymentCard } from "@/components/ui";
@@ -21,19 +22,19 @@ const STATUS_TEXT: Record<string, string> = {
 };
 
 const STEPS = [
-  { title: "Lock the rules", text: "Plain-English exclusion rules, compiled by Gemini into exact checks and locked before you see any data." },
-  { title: "Verify every response", text: "Rule checks, near-duplicate detection and AI review sort each respondent into Pay, Hold or Don't pay." },
-  { title: "Decide the holds", text: "A person reviews each hold with the evidence. AI can flag a response, but never deny payment." },
-  { title: "Pay through PayPal", text: "The PI approves one batch, PayPal Payouts sends it, and the ledger accounts for every cent." },
+  { ai: true, title: "Lock the rules", text: "Plain-English exclusion rules, compiled by Gemini into exact checks and locked before you see any data." },
+  { ai: true, title: "Verify every response", text: "Rule checks, near-duplicate detection and AI review sort each respondent into Pay, Hold or Don't pay." },
+  { ai: false, title: "Decide the holds", text: "A person reviews each hold with the evidence. AI can flag a response, but never deny payment." },
+  { ai: false, title: "Pay through PayPal", text: "The PI approves one batch, PayPal Payouts sends it, and the ledger accounts for every cent." },
 ];
 
 function SampleButton() {
   return (
-    <form action={openSampleStudyAction}>
-      <PendingButton variant="primary" pendingText="Setting up the sample study…">
+    <ActionForm action={openSampleStudyAction}>
+      <ActionSubmit variant="primary" pendingText="Setting up the sample study…">
         Open the sample study <MdArrowForward size={18} aria-hidden />
-      </PendingButton>
-    </form>
+      </ActionSubmit>
+    </ActionForm>
   );
 }
 
@@ -171,7 +172,14 @@ export default async function Home() {
           <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((step, index) => (
               <li key={step.title} className="rounded-lg border border-rule bg-surface p-5">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-navy font-mono text-sm font-bold text-on-navy">{index + 1}</span>
+                <div className="flex items-center justify-between">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-navy font-mono text-sm font-bold text-on-navy">{index + 1}</span>
+                  {step.ai && (
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                      <AiAnimation kind="thinking" size={32} once /> Gemini
+                    </span>
+                  )}
+                </div>
                 <p className="mt-3 font-bold">{step.title}</p>
                 <p className="mt-1 text-sm text-muted">{step.text}</p>
               </li>

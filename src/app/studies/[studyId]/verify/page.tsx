@@ -74,6 +74,12 @@ export default async function VerifyPage({ params }: PageProps<"/studies/[studyI
       .where(and(eq(checks.studyId, study.id), inArray(checks.outcome, ["exclude", "review"])))
       .groupBy(checks.ruleId, checks.outcome),
   ]);
+  const injections = await db()
+    .select({ ref: respondents.respondentRef, evidence: checks.evidenceJson })
+    .from(checks)
+    .innerJoin(respondents, eq(respondents.id, checks.respondentId))
+    .where(and(eq(checks.studyId, study.id), eq(checks.ruleId, "system:instruction_text")))
+    .orderBy(asc(respondents.rowNumber));
   const ruleTypes = new Map(locked.rules.rules.map((rule) => [rule.id, rule.type]));
   const reasonMap = new Map<string, { label: string; exclude: number; review: number }>();
   for (const row of flagged) {
@@ -92,6 +98,7 @@ export default async function VerifyPage({ params }: PageProps<"/studies/[studyI
       counts={counts}
       reasons={reasons}
       timeline={timeline}
+      injections={injections.map((row) => ({ ref: row.ref, quote: typeof (row.evidence as { quote?: unknown }).quote === "string" ? ((row.evidence as { quote: string }).quote) : null }))}
       initialJob={state}
       ruleVersion={locked.row.version}
       jobRuleVersion={job ? ((job.cursorJson as { ruleSetVersion?: number }).ruleSetVersion ?? null) : null}

@@ -4,7 +4,9 @@ Verify study responses, then pay real participants through PayPal.
 
 Honorarium is for university research labs that pay participants in online surveys recruited through open links, and for the ethics boards (IRBs) that oversee them. Every respondent is checked against exclusion rules the lab locked before seeing the data, then gets one of three decisions with evidence: **Pay**, **Hold for review** or **Don't pay**. A person reviews the holds, the PI approves a batch, and PayPal Payouts sends the money. An append-only ledger accounts for every cent, and the ethics report records what happened.
 
-All payments are PayPal **sandbox** test money.
+All payments are PayPal **sandbox** test money. Live demo: https://honorarium-ruby.vercel.app
+
+![Verification results for the sample study: decision rings, the bot burst on the timeline, and what each check found](docs/screenshots/verification.png)
 
 ## The problem
 
@@ -74,6 +76,19 @@ Results are cached by sha256 of model, prompt version and payload. Calls are spa
 - Every study read is scoped to the browser's signed workspace cookie (HMAC, HttpOnly, SameSite=Lax, Secure on HTTPS). Payout identities are masked, and every reveal is audit-logged. Participant text is rendered as text only. CSV exports escape formula-leading cells. Imports, AI jobs and payout batches are rate-limited.
 - Every response carries a Content-Security-Policy (same-origin scripts, styles, images and connections; no framing; no `eval`), HSTS, `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`. Senders of events that fail webhook verification are rate-limited before PayPal is asked again, and only the event ID and type of an unverified event are stored.
 
+## What you can do in it
+
+| | |
+|---|---|
+| ![Home](docs/screenshots/home.png) | **Workspace summary.** A card-style budget summary, decision totals and every study at a glance. |
+| ![AI intro](docs/screenshots/ai-intro.png) | **AI assistant, explained.** On the first visit to results, Gemini introduces itself: it flags, people decide. Animations show when Gemini is working, done or blocked. |
+| ![Ledger](docs/screenshots/ledger.png) | **Budget ledger.** Every cent in one of six buckets, shown as rings, with a balance check that runs inside every write. |
+| ![Activity](docs/screenshots/activity.png) | **Activity.** A PayPal-style timeline of everything that happened: rules locked, data imported, verification, each review decision, payouts and the PayPal webhooks that confirmed them. |
+| ![Ethics report](docs/screenshots/ethics-report.png) | **Ethics report.** An "at a glance" summary with integrity checks computed from the data: rules locked before import, ledger balanced, overrides counted. Prints to PDF. |
+| ![Help](docs/screenshots/help.png) | **Help for researchers.** The path from setup to payment, consent and protocol wording to copy, and answers to the questions IRBs ask. |
+
+Also: a review queue driven by the keyboard (`J`/`K`, `P`, `D`, `/`), a safety panel listing answers that tried to instruct the AI (prompt injection), a live count of Gemini calls against the daily cap, cancel-unclaimed and retry-failed payouts, and a decisions CSV export with formula escaping.
+
 ## How it differs from existing tools
 
 Incentive platforms such as Tremendous check payment-side signals. Panel platforms such as Prolific and Respondent pay only within their own panels. Honorarium is for researcher-run studies with open recruitment. It combines answer-level and payment-level checks in one verify-then-pay flow, pays through PayPal, and produces an audit trail for the ethics board.
@@ -136,8 +151,8 @@ Other commands:
 
 ## Built with
 
-Next.js 16 (App Router), TypeScript (strict), Tailwind CSS 4, Radix UI, AG Grid, Recharts (charts), three.js with React Three Fiber (the home page coins), Google Material icons via react-icons, Drizzle ORM on Neon Postgres, zod, Papa Parse, Vitest and Playwright. The logo and sticker illustrations are original SVG artwork. Development was assisted by Claude Code.
+Next.js 16 (App Router), TypeScript (strict), Tailwind CSS 4, Radix UI, AG Grid, Recharts (timeline), Lottie animations via dotLottie (WebAssembly player served from the app, not a CDN), Google Material icons via react-icons, Drizzle ORM on Neon Postgres, zod, Papa Parse, Vitest and Playwright. The logo, payment card and rings are original SVG artwork. Development was assisted by Claude Code.
 
 ## Licence
 
-MIT.
+[MIT](LICENSE).

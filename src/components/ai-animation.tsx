@@ -1,8 +1,8 @@
 "use client";
 
-import { DotLottieReact, setWasmUrl } from "@lottiefiles/dotlottie-react";
-import { useSyncExternalStore, type ReactNode } from "react";
-import { MdAutoAwesome, MdCancel, MdCheckCircle } from "react-icons/md";
+import { DotLottieReact, setWasmUrl, type DotLottie } from "@lottiefiles/dotlottie-react";
+import { useRef, type ReactNode } from "react";
+import { useHydrated } from "@/lib/use-hydrated";
 
 // The player's WebAssembly engine is served by this app (see scripts/copy-lottie-wasm.mjs), never from a CDN.
 setWasmUrl("/animations/dotlottie-player.wasm");
@@ -15,31 +15,35 @@ const SOURCES: Record<AiAnimationKind, string> = {
   failed: "/animations/failed.lottie",
 };
 
-const STILL = {
-  thinking: { Icon: MdAutoAwesome, color: "text-primary" },
-  success: { Icon: MdCheckCircle, color: "text-pay" },
-  failed: { Icon: MdCancel, color: "text-dont-pay" },
-};
-
-function subscribe(callback: () => void) {
-  const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-  query.addEventListener("change", callback);
-  return () => query.removeEventListener("change", callback);
-}
-
 /**
  * The AI assistant animation while Gemini is working, and a success or failed animation once it is done.
- * Decorative: the surrounding text always says what happened. Reduced-motion users see a still icon.
+ * Decorative: the surrounding text always says what happened. With "reduce motion" on, it plays once instead of
+ * looping; hovering replays it (motion the viewer asks for).
  */
 export function AiAnimation({ kind, size = 48, once = false }: { kind: AiAnimationKind; size?: number; once?: boolean }) {
-  const reduced = useSyncExternalStore(subscribe, () => window.matchMedia("(prefers-reduced-motion: reduce)").matches, () => true);
-  if (reduced) {
-    const still = STILL[kind];
-    return <still.Icon size={size * 0.6} aria-hidden className={`shrink-0 ${still.color}`} />;
+  // The player draws to a canvas in the browser only; server and hydration render an empty box of the same size.
+  const hydrated = useHydrated();
+  const reduced = hydrated && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const player = useRef<DotLottie | null>(null);
+  const replay = () => {
+    player.current?.stop();
+    player.current?.play();
+  };
+  if (!hydrated) {
+    return <span aria-hidden className="inline-block shrink-0" style={{ width: size, height: size }} />;
   }
   return (
-    <span aria-hidden className="inline-block shrink-0" style={{ width: size, height: size }}>
-      <DotLottieReact key={kind} src={SOURCES[kind]} autoplay loop={kind === "thinking" && !once} style={{ width: size, height: size }} />
+    <span aria-hidden className="inline-block shrink-0" style={{ width: size, height: size }} onMouseEnter={replay}>
+      <DotLottieReact
+        key={kind}
+        src={SOURCES[kind]}
+        autoplay
+        loop={kind === "thinking" && !once && !reduced}
+        dotLottieRefCallback={(instance) => {
+          player.current = instance;
+        }}
+        style={{ width: size, height: size }}
+      />
     </span>
   );
 }

@@ -1,15 +1,15 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, useTransition } from "react";
 import { createStudyAction, type FormState } from "@/app/actions/studies";
-import { PendingButton } from "@/components/pending-button";
-import { Field, inputClass, Notice } from "@/components/ui";
+import { Button, Field, inputClass, Notice } from "@/components/ui";
 import { formatCents, parseDollarsToCents } from "@/lib/money";
 
 const CONSENT_SUGGESTION = "If responses cannot be verified, compensation may not be issued.";
 
 export function NewStudyForm() {
-  const [state, action] = useActionState<FormState, FormData>(createStudyAction, {});
+  const [state, setState] = useState<FormState>({});
+  const [pending, startTransition] = useTransition();
   const [budget, setBudget] = useState("");
   const [amount, setAmount] = useState("");
   const budgetCents = parseDollarsToCents(budget);
@@ -18,7 +18,16 @@ export function NewStudyForm() {
   const errors = state.fieldErrors ?? {};
 
   return (
-    <form action={action} className="mt-6 space-y-6" noValidate>
+    <form
+      // Submitted from the client so the server does not add hidden server-action inputs the form cannot hydrate.
+      onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        startTransition(async () => setState(await createStudyAction({}, data)));
+      }}
+      className="mt-6 space-y-6"
+      noValidate
+    >
       {state.error && <Notice tone="error" title="The study was not created">{state.error}</Notice>}
 
       <fieldset className="space-y-4 rounded-lg border border-rule bg-surface p-5">
@@ -70,9 +79,9 @@ export function NewStudyForm() {
         </label>
       </fieldset>
 
-      <PendingButton variant="primary" pendingText="Creating study…">
-        Create study
-      </PendingButton>
+      <Button type="submit" variant="primary" disabled={pending} aria-busy={pending}>
+        {pending ? "Creating study…" : "Create study"}
+      </Button>
     </form>
   );
 }

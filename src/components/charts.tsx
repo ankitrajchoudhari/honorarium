@@ -1,8 +1,8 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { MiniRing } from "@/components/rings";
+import { useHydrated } from "@/lib/use-hydrated";
 
 const TOOLTIP_STYLE = {
   contentStyle: { background: "var(--surface)", border: "1px solid var(--rule)", borderRadius: 12, boxShadow: "var(--shadow)", fontSize: 12, fontWeight: 600, color: "var(--ink)" },
@@ -24,13 +24,6 @@ const SERIES = [
   { key: "hold", name: "Hold for review", color: "var(--hold)" },
   { key: "pay", name: "Pay", color: "var(--pay)" },
 ] as const;
-
-const noSubscribe = () => () => {};
-
-/** False during server render and hydration, true afterwards: Recharts measures the browser, so it renders client-side only. */
-function useHydrated(): boolean {
-  return useSyncExternalStore(noSubscribe, () => true, () => false);
-}
 
 /** Submissions per time slot, stacked by decision: a bot burst shows up as a sharp red peak. */
 export function SubmissionTimeline({ bins, summary }: { bins: TimeBin[]; summary: string }) {

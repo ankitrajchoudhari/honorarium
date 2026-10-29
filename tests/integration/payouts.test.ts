@@ -33,7 +33,7 @@ vi.mock("@/paypal/payouts", async (importOriginal) => {
 });
 
 const { db, withStudyLock } = await import("@/db/client");
-const { decisions, payoutItems, respondents, studies, webhookEvents, workspaces } = await import("@/db/schema");
+const { decisions, imports, payoutItems, ruleSets, respondents, studies, webhookEvents, workspaces } = await import("@/db/schema");
 const { getStudy, listStudies } = await import("@/db/queries");
 const { recordDecision } = await import("@/decisions/service");
 const { jobState, startVerification } = await import("@/jobs/verify");
@@ -118,6 +118,17 @@ describe("workspace isolation", () => {
     const jobId = await startVerification(study);
     expect(await jobState(workspaceA, jobId)).not.toBeNull();
     expect(await jobState(workspaceB, jobId)).toBeNull();
+  });
+});
+
+describe("rules lock order", () => {
+  it("records the sample's rules as locked no later than its import, even though both happen in one transaction", async () => {
+    const study = await loadStudy(sampleId);
+    const [locked] = await db().select().from(ruleSets).where(and(eq(ruleSets.studyId, study.id), isNotNull(ruleSets.lockedAt)));
+    const [imported] = await db().select().from(imports).where(eq(imports.studyId, study.id));
+    expect(locked?.lockedAt).toBeTruthy();
+    expect(imported).toBeTruthy();
+    expect((locked?.lockedAt ?? new Date(0)).getTime()).toBeLessThanOrEqual((imported?.createdAt ?? new Date(0)).getTime());
   });
 });
 

@@ -13,6 +13,7 @@ import {
 } from "@/ai/assessment";
 import { callStructured, MIN_CALL_SPACING_MS } from "@/ai/gemini";
 import { assertNoIdentifiers, buildAssessmentPayload } from "@/ai/payload";
+import { audit } from "@/db/audit";
 import { db, withStudyLock, type Executor, type Transaction } from "@/db/client";
 import { checks, decisions, jobs, respondents, studies } from "@/db/schema";
 import { lockedRuleSet, studyImport, studyQuestionMap, touchStudy, type Study } from "@/db/queries";
@@ -410,6 +411,22 @@ async function runDecide(loaded: Loaded, cursor: Cursor): Promise<StepOutcome> {
     await applyDecisions(tx, loaded.study.id);
     await syncReservations(tx, loaded.study.id, "verification");
     await touchStudy(tx, loaded.study.id, "reviewing");
+    const [counts] = await tx
+      .select({
+        pay: sql<number>`count(*) filter (where ${respondents.currentDecision} = 'pay')::int`,
+        hold: sql<number>`count(*) filter (where ${respondents.currentDecision} = 'hold')::int`,
+        dontPay: sql<number>`count(*) filter (where ${respondents.currentDecision} = 'dont_pay')::int`,
+      })
+      .from(respondents)
+      .where(eq(respondents.studyId, loaded.study.id));
+    await audit(tx, {
+      workspaceId: loaded.study.workspaceId,
+      studyId: loaded.study.id,
+      actor: "Verification",
+      action: "verification.finished",
+      target: `rules v${loaded.ruleSetVersion}`,
+      after: { ...counts, aiAssessed: cursor.aiDone - cursor.aiNotRun, aiNotRun: cursor.aiNotRun },
+    });
   });
   return { cursor: { ...cursor, phase: "done" }, status: "done", waitMs: 0 };
 }

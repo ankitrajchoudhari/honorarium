@@ -7,6 +7,7 @@ import {
   MdOutlineDescription,
   MdOutlineFactCheck,
   MdOutlineFileUpload,
+  MdOutlineHistory,
   MdOutlinePayments,
   MdOutlineRateReview,
   MdOutlineRuleFolder,
@@ -19,6 +20,7 @@ const TABS = [
   { segment: "review", label: "Review", Icon: MdOutlineRateReview },
   { segment: "payouts", label: "Payouts", Icon: MdOutlinePayments },
   { segment: "ledger", label: "Ledger", Icon: MdOutlineAccountBalanceWallet },
+  { segment: "activity", label: "Activity", Icon: MdOutlineHistory },
   { segment: "report", label: "Ethics report", Icon: MdOutlineDescription },
 ];
 

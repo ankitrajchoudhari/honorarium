@@ -7,9 +7,9 @@ test("sample study: verify, review two holds, pay through the PayPal sandbox", a
   const studyUrl = page.url().replace(/\/verify$/, "");
 
   // First visit: the AI intro explains what Gemini does and does not do, then is dismissed.
-  await expect(page.getByRole("dialog", { name: "It flags. People decide." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "It flags. People decide." })).toBeVisible();
   await page.getByRole("button", { name: "Got it" }).click();
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "It flags. People decide." })).toHaveCount(0);
   await expect(page.getByText("Verification finished")).toBeVisible({ timeout: 12 * 60_000 });
   const counter = (label: string) => page.getByRole("button", { name: new RegExp(`^${label}`) });
   await expect(counter("Pay")).toBeVisible();
@@ -50,7 +50,7 @@ test("sample study: verify, review two holds, pay through the PayPal sandbox", a
   await page.goto(`${studyUrl}/ledger`);
   await expect(page.getByText("The books balance")).toBeVisible();
 
-  for (const tab of ["Rules", "Import", "Verification", "Review", "Payouts", "Ledger", "Ethics report"]) {
+  for (const tab of ["Rules", "Import", "Verification", "Review", "Payouts", "Ledger", "Activity", "Ethics report"]) {
     await page.getByRole("navigation", { name: "Study" }).getByRole("link", { name: tab, exact: true }).click();
     await expect(page.getByRole("link", { name: tab, exact: true })).toHaveAttribute("aria-current", "page");
     await expect(page.getByText("Something went wrong")).toHaveCount(0);

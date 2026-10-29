@@ -1,3 +1,5 @@
+import { MdCancel, MdCheckCircle, MdInfoOutline } from "react-icons/md";
+import { Rings } from "@/components/rings";
 import { and, asc, count, countDistinct, eq, isNull, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -74,6 +76,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/s
   }));
   const otherFlags = byRule.filter((row) => !rules.some((rule) => rule.id === row.ruleId));
   const total = counts.total;
+  const lockedBeforeImport = !imported ? null : locked?.lockedAt ? locked.lockedAt.getTime() <= imported.createdAt.getTime() : false;
 
   return (
     <article className="mx-auto max-w-4xl space-y-8 rounded-md border border-rule bg-surface p-6 print:border-0 print:p-0">
@@ -102,6 +105,52 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/s
         </p>
       </header>
 
+      <section aria-labelledby="glance-heading" className="space-y-4">
+        <h2 id="glance-heading" className="font-serif text-lg font-semibold">
+          At a glance
+        </h2>
+        <div className="grid items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <Rings
+            label="Decisions"
+            size={170}
+            thickness={13}
+            center={
+              <div>
+                <div className="font-mono text-lg font-semibold tabular">{total}</div>
+                <div className="text-xs text-muted">responses</div>
+              </div>
+            }
+            rings={[
+              { label: "Pay", value: counts.pay, max: total, color: "var(--pay)", display: String(counts.pay) },
+              { label: "Hold for review", value: counts.hold, max: total, color: "var(--hold)", display: String(counts.hold) },
+              { label: "Don't pay", value: counts.dontPay, max: total, color: "var(--dont-pay)", display: String(counts.dontPay) },
+            ]}
+          />
+          <ul className="space-y-2 text-sm">
+            {[
+              {
+                ok: lockedBeforeImport,
+                text: lockedBeforeImport === null ? "No data imported yet." : lockedBeforeImport ? "Rules were locked before any responses were imported." : "Responses were imported before these rules were locked.",
+              },
+              { ok: ledger.invariant.balanced, text: ledger.invariant.balanced ? "The budget ledger balances to the cent." : "The budget ledger is out of balance." },
+              { ok: overrides.length === 0 ? true : null, text: overrides.length === 0 ? "No rule decision was overridden." : `${overrides.length} rule decision${overrides.length === 1 ? " was" : "s were"} overridden by a reviewer (section 4).` },
+              { ok: true, text: "AI could only flag answers for review; no payment was denied by AI." },
+            ].map((item) => (
+              <li key={item.text} className="flex gap-2">
+                {item.ok === true ? (
+                  <MdCheckCircle size={20} aria-hidden className="mt-0.5 shrink-0 text-pay" />
+                ) : item.ok === false ? (
+                  <MdCancel size={20} aria-hidden className="mt-0.5 shrink-0 text-dont-pay" />
+                ) : (
+                  <MdInfoOutline size={20} aria-hidden className="mt-0.5 shrink-0 text-hold" />
+                )}
+                {item.text}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       <section className="space-y-2">
         <h2 className="font-serif text-lg font-semibold">1. Consent and rules</h2>
         <p>
@@ -110,7 +159,8 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/s
         {locked ? (
           <>
             <p>
-              Rules v{locked.version} were locked <LocalTime date={locked.lockedAt!} /> by {locked.lockedBy}, before responses were imported
+              Rules v{locked.version} were locked <LocalTime date={locked.lockedAt!} /> by {locked.lockedBy}
+              {lockedBeforeImport === null ? "; no responses have been imported yet" : lockedBeforeImport ? ", before responses were imported" : ", after responses were imported (see the rule changes below)"}
               {imported ? (
                 <>
                   {" "}
