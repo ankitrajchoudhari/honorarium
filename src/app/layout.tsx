@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Plus_Jakarta_Sans, Source_Serif_4 } from "next/font/google";
-import { THEME_BOOT_SCRIPT } from "@/components/theme-toggle";
+import { cookies } from "next/headers";
+import { THEME_COOKIE } from "@/lib/theme";
 import { readEnv } from "@/lib/env";
 import "./globals.css";
 
@@ -36,13 +37,17 @@ function SetupRequired({ problems }: { problems: { variable: string; message: st
   );
 }
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+/**
+ * The theme comes from a cookie and is rendered on <html>, so the first paint is already right and no script runs
+ * before hydration. (An inline script in a hand-written <head> knocked React's hydration cursor into <head> on
+ * slowly streamed pages.) Without a saved choice, CSS follows the system setting.
+ */
+export default async function RootLayout({ children }: LayoutProps<"/">) {
   const envResult = readEnv();
+  const saved = (await cookies()).get(THEME_COOKIE)?.value;
+  const theme = saved === "dark" || saved === "light" ? saved : undefined;
   return (
-    <html lang="en" className={`${sans.variable} ${serif.variable} ${mono.variable}`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
-      </head>
+    <html lang="en" data-theme={theme} className={`${sans.variable} ${serif.variable} ${mono.variable}`} suppressHydrationWarning>
       <body>
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-sm focus:bg-surface focus:px-3 focus:py-2">
           Skip to content

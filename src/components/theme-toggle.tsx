@@ -2,16 +2,22 @@
 
 import { useEffect, useRef } from "react";
 import { MdDarkMode, MdLightMode } from "react-icons/md";
+import { THEME_COOKIE } from "@/lib/theme";
 
 type Theme = "light" | "dark";
 
+/** The theme on screen: an explicit choice (data-theme, set by the server from the cookie), else the system setting. */
 function currentTheme(): Theme {
-  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+  const chosen = document.documentElement.dataset.theme;
+  if (chosen === "dark" || chosen === "light") {
+    return chosen;
+  }
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 /**
- * A sliding switch. Its look comes from CSS on the `data-theme` attribute (set before first paint by
- * THEME_BOOT_SCRIPT), so React never re-renders it after hydration; only aria-checked is kept in sync here.
+ * A sliding switch. The choice is kept in a cookie so the server renders the right theme in the first paint, with no
+ * script to run beforehand; its look comes from CSS, so React never re-renders it after hydration.
  */
 export function ThemeToggle() {
   const button = useRef<HTMLButtonElement>(null);
@@ -23,11 +29,7 @@ export function ThemeToggle() {
   const toggle = () => {
     const next: Theme = currentTheme() === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
-    try {
-      window.localStorage.setItem("hon-theme", next);
-    } catch {
-      // Storage can be unavailable (private mode); the theme still applies for this page view.
-    }
+    document.cookie = `${THEME_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
     button.current?.setAttribute("aria-checked", String(next === "dark"));
   };
 
@@ -42,6 +44,3 @@ export function ThemeToggle() {
     </button>
   );
 }
-
-/** Runs in <head> before first paint: the saved choice, otherwise the system setting, becomes `data-theme`. */
-export const THEME_BOOT_SCRIPT = `try{var t=localStorage.getItem("hon-theme");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}`;
