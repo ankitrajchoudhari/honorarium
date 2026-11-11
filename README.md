@@ -147,11 +147,15 @@ Other commands:
 2. Click **Open the sample study**. The rules are already locked, and verification starts at once.
 3. Open any row for its evidence, or go to **Review** to decide the holds (keys `J`/`K`, `P`, `D`, `/`).
 4. On **Payouts**, type `SLEEP-26` to approve. Statuses update from PayPal, and the money strip and **Ledger** follow.
-5. To see a received payment, log in at [sandbox.paypal.com](https://www.sandbox.paypal.com) with a sandbox receiver account: `<sandbox receiver logins>`.
+5. To see a received payment, log in at [sandbox.paypal.com](https://www.sandbox.paypal.com) with one of the four sandbox receiver accounts. Their logins are in the Devpost submission's testing instructions rather than in this public repository. Even without them, each payment's PayPal status and item ID are shown on the **Payouts** page.
 
 ## Built with
 
 Next.js 16 (App Router), TypeScript (strict), Tailwind CSS 4, Radix UI, AG Grid, Recharts (timeline), Lottie animations via dotLottie (WebAssembly player served from the app, not a CDN), Google Material icons via react-icons, Drizzle ORM on Neon Postgres, zod, Papa Parse, Vitest and Playwright. The logo, payment card and rings are original SVG artwork. Development was assisted by Claude Code.
+
+### Sponsor tools
+
+- **AG Grid Community** (`ag-grid-community` and `ag-grid-react` v36, MIT licence). It powers the three data-heavy tables: verification results (sort, filter and search across every respondent), payout items (PayPal status, item ID and last event per payment) and the append-only ledger entries. The grids are themed through AG Grid's Theming API with the app's own colour tokens, and decision and status cells render the app's own chips with a text label and icon. Participant text is rendered as plain text, never as HTML. Only Community features are used; the Enterprise package is not installed.
 
 ## Licence
 
