@@ -16,9 +16,11 @@ Regenerate with `npm run sample:generate`. The same seed gives the same file.
 
 The README cites these figures. They describe the problem; none of their data is used in the app.
 
-- NORC at the University of Chicago, literature review on fraud in online survey research (2026): fraudulent responses commonly estimated at 15–30%, up to 45% on some platforms.
-- Published case reports of open-link recruitment, as summarised in that literature: 981 responses in 4 hours with 3 genuine; 94.5% fraudulent responses in a health study; over 95% bots from Twitter recruitment; 4 valid out of 1,200+ voucher claims.
-- A 2025 test in which AI-written answers passed 99.8% of standard survey quality checks.
+Every figure below was checked against the NORC brief's text; the named studies are the brief's own citations.
+
+- NORC at the University of Chicago, "Fraud in online surveys" literature review (CPSS research brief, 2026), https://www.norc.org/content/dam/norc-org/pdf2026/cpss-research-brief-fraud-lit-review.pdf: fraud rates estimated at 15–30 percent across the market research industry, reaching as high as 45 percent on some survey platforms.
+- Case reports cited in that brief: Krawczyk and Siek (2024), 981 responses within four hours, of which only three were authentic; Pozzar et al. (2020), 94.5 percent of responses in a health research study fraudulent; Imes et al. (2024), over 95 percent of Twitter-recruited responses bot-generated; Goodrich et al. (2023), only 4 percent of 2,622 responses legitimate in a U.S. beekeeping survey.
+- Westwood (2025), "The potential existential threat of large language models to online survey research", PNAS 122(47), https://doi.org/10.1073/pnas.2518075122: an autonomous LLM-based respondent passed 99.8 percent of standard data quality checks.
 - Johns Hopkins research guidance on participant payment (2025): verify before paying rather than paying automatically on completion, state exclusion rules in the consent form, and watch for repeated payment requests from one address.
 
 ## External services

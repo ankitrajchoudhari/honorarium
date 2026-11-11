@@ -13,8 +13,8 @@ All payments are PayPal **sandbox** test money. Live demo: https://honorarium-ru
 When a study is advertised on social media, mailing lists or posters, bots and fraudsters flood it for the payment:
 
 - Fraudulent responses are commonly estimated at 15–30%, and up to 45% on some platforms (NORC literature review, 2026).
-- Published cases: 981 responses in 4 hours with only 3 genuine; 94.5% fraudulent in a health study; over 95% bots from Twitter recruitment; 4 valid out of 1,200+ voucher claims.
-- AI-written answers passed 99.8% of standard quality checks in a 2025 test.
+- Published cases: 981 responses in 4 hours with only 3 genuine (Krawczyk & Siek, 2024); 94.5% fraudulent in a health study (Pozzar et al., 2020); over 95% bots from Twitter recruitment (Imes et al., 2024); only 4% of 2,622 responses legitimate in a beekeeping survey (Goodrich et al., 2023).
+- An autonomous AI respondent passed 99.8% of standard data quality checks (Westwood, PNAS, 2025).
 - Johns Hopkins guidance (2025) says not to pay automatically on completion, to verify first and to state exclusion rules in the consent form. Manual review works, but it is slow and costly.
 
 Sources are listed in [DATA_SOURCES.md](DATA_SOURCES.md).
